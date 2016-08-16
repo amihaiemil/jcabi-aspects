@@ -63,6 +63,11 @@
     </distributionManagement>
     <dependencies>
         <dependency>
+	        <groupId>com.jcabi</groupId>
+	        <artifactId>jcabi-xml</artifactId>
+	        <version>0.17.2</version>
+        </dependency>
+        <dependency>
             <groupId>com.jcabi</groupId>
             <artifactId>jcabi-log</artifactId>
             <!-- version is set in order to avoid a cyclic reference -->

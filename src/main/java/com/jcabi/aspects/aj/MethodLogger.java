@@ -39,7 +39,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -71,14 +70,14 @@ public final class MethodLogger {
     /**
      * Currently running methods.
      */
-    private final transient Set<Marker> running;
+    private final transient Set<MethodMarker> running;
 
     /**
      * Public ctor.
      */
     @SuppressWarnings("PMD.DoNotUseThreads")
     public MethodLogger() {
-        this.running = new ConcurrentSkipListSet<Marker>();
+        this.running = new ConcurrentSkipListSet<MethodMarker>();
         final ScheduledExecutorService monitor =
             Executors.newSingleThreadScheduledExecutor(
                 new NamedThreads(
@@ -92,7 +91,7 @@ public final class MethodLogger {
                     new Runnable() {
                         @Override
                         public void run() {
-                            for (final MethodLogger.Marker marker
+                            for (final MethodMarker marker
                                 : MethodLogger.this.running) {
                                 marker.monitor();
                             }
@@ -190,8 +189,8 @@ public final class MethodLogger {
             );
         }
         final long start = System.nanoTime();
-        final MethodLogger.Marker marker =
-            new MethodLogger.Marker(point, annotation);
+        final MethodMarker marker =
+            new MethodMarker(point, annotation);
         this.running.add(marker);
         int level = annotation.value();
         try {
@@ -396,99 +395,6 @@ public final class MethodLogger {
             trace.getMethodName(),
             trace.getLineNumber()
         );
-    }
-
-    /**
-     * Marker of a running method.
-     */
-    private static final class Marker
-        implements Comparable<MethodLogger.Marker> {
-        /**
-         * When the method was started, in milliseconds.
-         */
-        private final transient long started;
-        /**
-         * Which monitoring cycle was logged recently.
-         */
-        private final transient AtomicInteger logged;
-        /**
-         * The thread it's running in.
-         */
-        @SuppressWarnings("PMD.DoNotUseThreads")
-        private final transient Thread thread;
-        /**
-         * Joint point.
-         */
-        private final transient ProceedingJoinPoint point;
-        /**
-         * Annotation.
-         */
-        private final transient Loggable annotation;
-        /**
-         * Public ctor.
-         * @param pnt Joint point
-         * @param annt Annotation
-         */
-        protected Marker(final ProceedingJoinPoint pnt, final Loggable annt) {
-            this.started = System.currentTimeMillis();
-            this.logged = new AtomicInteger();
-            this.point = pnt;
-            this.annotation = annt;
-            this.thread = Thread.currentThread();
-        }
-        /**
-         * Monitor it's status and log the problem, if any.
-         */
-        public void monitor() {
-            final TimeUnit unit = this.annotation.unit();
-            final long threshold = this.annotation.limit();
-            final long age = unit.convert(
-                System.currentTimeMillis() - this.started, TimeUnit.MILLISECONDS
-            );
-            final int cycle = (int) ((age - threshold) / threshold);
-            if (cycle > this.logged.get()) {
-                final Method method = MethodSignature.class.cast(
-                    this.point.getSignature()
-                ).getMethod();
-                Logger.warn(
-                    method.getDeclaringClass(),
-                    "%s: takes more than %[ms]s, %[ms]s already, thread=%s/%s",
-                    Mnemos.toText(this.point, true, this.annotation.skipArgs()),
-                    TimeUnit.MILLISECONDS.convert(threshold, unit),
-                    TimeUnit.MILLISECONDS.convert(age, unit),
-                    this.thread.getName(),
-                    this.thread.getState()
-                );
-                Logger.debug(
-                    method.getDeclaringClass(),
-                    "%s: thread %s/%s stacktrace: %s",
-                    Mnemos.toText(this.point, true, this.annotation.skipArgs()),
-                    this.thread.getName(),
-                    this.thread.getState(),
-                    MethodLogger.allText(this.thread.getStackTrace())
-                );
-                this.logged.set(cycle);
-            }
-        }
-        @Override
-        public int hashCode() {
-            return this.point.hashCode();
-        }
-        @Override
-        public boolean equals(final Object obj) {
-            return obj == this || MethodLogger.Marker.class.cast(obj)
-                .point.equals(this.point);
-        }
-        @Override
-        public int compareTo(final Marker marker) {
-            int cmp = 0;
-            if (this.started < marker.started) {
-                cmp = 1;
-            } else if (this.started > marker.started) {
-                cmp = -1;
-            }
-            return cmp;
-        }
     }
 
 }

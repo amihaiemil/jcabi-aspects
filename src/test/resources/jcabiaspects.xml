@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aspectsconfig>
+    <logging>
+        <annotation scope="com.company.ClassName">
+            <level>Level.DEBUG</level>
+            <prepend>true</prepend>
+         </annotation>
+         <annotation scope="com.company.ClassNameSecond">
+            <level>Level.WARNING</level>
+            <prepend>true</prepend>
+         </annotation>
+    </logging>
+</aspectsconfig>
