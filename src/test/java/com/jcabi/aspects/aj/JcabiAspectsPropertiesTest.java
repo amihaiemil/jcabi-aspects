@@ -37,7 +37,7 @@ import org.hamcrest.Matchers;
 import org.junit.Test;
 
 /**
- * Unit tests for {@link JcabiAspectsProperties}
+ * Unit tests for {@link JcabiAspectsProperties}.
  * @author Mihai Andronache (amihaiemil@gmail.com)
  * @version $Id$
  * @since 0.23
@@ -51,10 +51,10 @@ public final class JcabiAspectsPropertiesTest {
      */
     @Test
     public void returnsTheLoggingConfigs() throws Exception {
-        JcabiAspectsProperties jap = new JcabiAspectsProperties(
+        final JcabiAspectsProperties jap = new JcabiAspectsProperties(
             new File("src/test/resources/jcabiaspects.xml")
         );
-        List<XML> annotations = jap.logging();
+        final List<XML> annotations = jap.logging();
         MatcherAssert.assertThat(
             annotations,
             Matchers.hasSize(Matchers.greaterThan(0))

@@ -47,7 +47,7 @@ public final class LoggingFromConfig {
      * Currently running methods.
      */
     private final transient Set<MethodMarker> running = null;
-    
+
     /**
      * Constructor.
      */

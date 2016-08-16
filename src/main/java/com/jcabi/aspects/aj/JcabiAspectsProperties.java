@@ -45,22 +45,27 @@ import java.util.List;
  *
  */
 final class JcabiAspectsProperties {
-	
-	/**
-	 * XML representing the jcabi-aspects configs.
-	 */
-	final transient XML aspectsConfigs;
 
-	/**
-	 * Ctor.
-	 * @param jcabiasp Jcabiaspects.xml configs file
-	 * @throws IOException If something goes wrong while reading the file
-	 */
-    JcabiAspectsProperties(File jcabiasp) throws IOException {
-        this.aspectsConfigs = new XMLDocument(jcabiasp);
+    /**
+     * XML representing the jcabi-aspects configs.
+     */
+    private final transient XML aspectscfg;
+
+    /**
+     * Ctor.
+     * @param jcabiasp Jcabiaspects.xml configs file
+     * @throws IOException If something goes wrong while reading the file
+     */
+    JcabiAspectsProperties(final File jcabiasp) throws IOException {
+        this.aspectscfg = new XMLDocument(jcabiasp);
     }
 
+    /**
+     * Return the logging <b>&lt;annotation&gt;</b> XML elements.
+     * @return List of XML elements
+     */
     public List<XML> logging() {
-        return this.aspectsConfigs.nodes("//logging/annotation");
+        return this.aspectscfg.nodes("//logging/annotation");
     }
+
 }

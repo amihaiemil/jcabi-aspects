@@ -29,13 +29,13 @@
  */
 package com.jcabi.aspects.aj;
 
+import com.jcabi.aspects.Loggable;
+import com.jcabi.log.Logger;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
-import com.jcabi.aspects.Loggable;
-import com.jcabi.log.Logger;
 
 /**
  * Marker of a running method.
@@ -46,10 +46,10 @@ import com.jcabi.log.Logger;
  */
 final class MethodMarker implements Comparable<MethodMarker> {
 
-	/**
-	 * StackTraceElement as text.
-	 */
-	private final transient StackTraceText stcktrctxt = new StackTraceText();
+    /**
+     * StackTraceElement as text.
+     */
+    private final transient StackTraceText stcktrctxt = new StackTraceText();
 
     /**
      * When the method was started, in milliseconds.
@@ -81,7 +81,7 @@ final class MethodMarker implements Comparable<MethodMarker> {
      * Execution time limit.
      */
     private final transient int limit;
-    
+
     /**
      * Skip arguments.
      */
@@ -102,12 +102,13 @@ final class MethodMarker implements Comparable<MethodMarker> {
      * @param tunit Time unit
      * @param lmt Execution time limit
      * @param skpargs Skip arguments
+     * @checkstyle ParameterNumberCheck (5 lines)
      */
     MethodMarker(
         final ProceedingJoinPoint pnt, final TimeUnit tunit,
         final int lmt, final boolean skpargs
     ) {
-    	this.started = System.currentTimeMillis();
+        this.started = System.currentTimeMillis();
         this.logged = new AtomicInteger();
         this.point = pnt;
         this.unit = tunit;
@@ -115,17 +116,15 @@ final class MethodMarker implements Comparable<MethodMarker> {
         this.skipargs = skpargs;
         this.thread = Thread.currentThread();
     }
-    
+
     /**
      * Monitor it's status and log the problem, if any.
      */
     public void monitor() {
-        final TimeUnit unit = this.unit;
-        final long threshold = this.limit;
-        final long age = unit.convert(
+        final long age = this.unit.convert(
             System.currentTimeMillis() - this.started, TimeUnit.MILLISECONDS
         );
-        final int cycle = (int) ((age - threshold) / threshold);
+        final int cycle = (int) ((age - this.limit) / this.limit);
         if (cycle > this.logged.get()) {
             final Method method = MethodSignature.class.cast(
                 this.point.getSignature()
@@ -134,8 +133,8 @@ final class MethodMarker implements Comparable<MethodMarker> {
                 method.getDeclaringClass(),
                 "%s: takes more than %[ms]s, %[ms]s already, thread=%s/%s",
                 Mnemos.toText(this.point, true, this.skipargs),
-                TimeUnit.MILLISECONDS.convert(threshold, unit),
-                TimeUnit.MILLISECONDS.convert(age, unit),
+                TimeUnit.MILLISECONDS.convert(this.limit, this.unit),
+                TimeUnit.MILLISECONDS.convert(age, this.unit),
                 this.thread.getName(),
                 this.thread.getState()
             );
@@ -145,7 +144,7 @@ final class MethodMarker implements Comparable<MethodMarker> {
                 Mnemos.toText(this.point, true, this.skipargs),
                 this.thread.getName(),
                 this.thread.getState(),
-                stcktrctxt.allText(this.thread.getStackTrace())
+                this.stcktrctxt.allText(this.thread.getStackTrace())
             );
             this.logged.set(cycle);
         }
